@@ -1,0 +1,7 @@
+{
+  "name": "Plan Reminder",
+  "description": "Современный планировщик и напоминатель о важных делах для школьников и студентов с таймером обратного отсчета в реальном времени и мультиязычностью.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
