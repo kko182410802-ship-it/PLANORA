@@ -3,10 +3,12 @@ import {
   Plus,
   Search,
   SlidersHorizontal,
+  User as UserIcon,
 } from 'lucide-react';
-import { Plan, Language, FilterType, SortType, ToastMessage } from './types/plan';
+import { Plan, Language, FilterType, SortType, ToastMessage, User, AuthSession } from './types/plan';
 import { translations } from './translations';
 import { createDemoPlans, getPlanDateTime } from './utils/dateUtils';
+import { authService } from './utils/authService';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { NearestPlanCard } from './components/NearestPlanCard';
@@ -16,9 +18,19 @@ import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { EmptyState } from './components/EmptyState';
 import { Toast } from './components/Toast';
 import { Footer } from './components/Footer';
+import { AuthPage } from './components/AuthPage';
 
-const STORAGE_KEY_PLANS = 'plan_reminder_plans_v1';
 const STORAGE_KEY_LANG = 'plan_reminder_lang_v1';
+
+function getUserStorageKey(user: User | null, isGuest: boolean): string {
+  if (user) {
+    return `plan_reminder_plans_user_${user.id}`;
+  }
+  if (isGuest) {
+    return 'plan_reminder_plans_guest';
+  }
+  return 'plan_reminder_plans_anonymous';
+}
 
 export default function App() {
   // 1. Language state
@@ -36,7 +48,7 @@ export default function App() {
 
   const t = translations[lang];
 
-  // Sync html lang attribute
+  // Sync html lang attribute & persistence
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY_LANG, lang);
@@ -46,7 +58,11 @@ export default function App() {
     }
   }, [lang]);
 
-  // 2. Real-time ticker: updates every second
+  // 2. Authentication & Session state
+  const [session, setSession] = useState<AuthSession>(() => authService.getSession());
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register' | 'forgot_password' | null>(null);
+
+  // 3. Real-time ticker: updates every second
   const [now, setNow] = useState<number>(Date.now());
   useEffect(() => {
     const timer = setInterval(() => {
@@ -55,38 +71,65 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // 3. Plans state
+  // 4. User-Isolated Plans state
+  // Plans are strictly loaded and saved under the active user's storage key
   const [plans, setPlans] = useState<Plan[]>(() => {
+    const initialSession = authService.getSession();
+    const key = getUserStorageKey(initialSession.user, initialSession.isGuest);
     try {
-      const saved = localStorage.getItem(STORAGE_KEY_PLANS);
+      const saved = localStorage.getItem(key);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       }
     } catch (e) {
-      console.warn('Failed to load plans from localStorage', e);
+      console.warn('Failed to load user plans from localStorage', e);
     }
     return createDemoPlans();
   });
 
-  // Save plans to localStorage
+  // Whenever the active session changes (user logs in, registers, switches account or logs out),
+  // reload that specific user's isolated plans from their key!
   useEffect(() => {
+    const key = getUserStorageKey(session.user, session.isGuest);
     try {
-      localStorage.setItem(STORAGE_KEY_PLANS, JSON.stringify(plans));
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setPlans(parsed);
+          return;
+        }
+      }
+      // If user has no plans yet in their account, seed initial isolated plans
+      const newDemos = createDemoPlans();
+      localStorage.setItem(key, JSON.stringify(newDemos));
+      setPlans(newDemos);
     } catch (e) {
-      console.warn('Failed to save plans to localStorage', e);
+      console.warn('Failed to switch isolated user plans', e);
+      setPlans(createDemoPlans());
     }
-  }, [plans]);
+  }, [session.user?.id, session.isGuest]);
 
-  // 4. UI Filters & Search
+  // Save plans strictly to the current user's storage key
+  useEffect(() => {
+    const key = getUserStorageKey(session.user, session.isGuest);
+    try {
+      localStorage.setItem(key, JSON.stringify(plans));
+    } catch (e) {
+      console.warn('Failed to save plans to user storage', e);
+    }
+  }, [plans, session.user?.id, session.isGuest]);
+
+  // 5. UI Filters & Search
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortType>('nearest');
   const [activeSection, setActiveSection] = useState<'hero' | 'plans'>('hero');
 
-  // 5. Modals & Notifications
+  // 6. Modals & Notifications
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [deleteModalPlan, setDeleteModalPlan] = useState<Plan | null>(null);
@@ -104,6 +147,27 @@ export default function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  // Auth Handlers
+  const handleAuthSuccess = (user: User, isGuest = false) => {
+    const newSession: AuthSession = { user: isGuest ? null : user, isGuest };
+    authService.setSession(newSession);
+    setSession(newSession);
+    setAuthModalMode(null);
+    if (!isGuest) {
+      addToast(t.auth.loginSuccess, 'success');
+    }
+  };
+
+  const handleLogout = () => {
+    authService.clearSession();
+    // Switch to guest session and open login view
+    const guestSession: AuthSession = { user: null, isGuest: true };
+    authService.setSession(guestSession);
+    setSession(guestSession);
+    addToast(t.auth.logoutSuccess, 'info');
+    setAuthModalMode('login');
+  };
+
   // Navigation smoothly
   const handleNavigate = (sectionId: string) => {
     setActiveSection(sectionId as 'hero' | 'plans');
@@ -114,12 +178,10 @@ export default function App() {
   };
 
   // Find Nearest Plan:
-  // "Если ближайший план уже прошёл, автоматически показывай следующий актуальный план."
   const nearestPlan = useMemo(() => {
     const uncompletedPlans = plans.filter((p) => !p.completed);
     if (uncompletedPlans.length === 0) return null;
 
-    // Separate future plans and overdue plans
     const upcoming = uncompletedPlans
       .map((p) => ({
         plan: p,
@@ -132,7 +194,6 @@ export default function App() {
       return upcoming[0].plan;
     }
 
-    // If all uncompleted plans are past/overdue, return the most recent one
     const past = uncompletedPlans
       .map((p) => ({
         plan: p,
@@ -148,7 +209,6 @@ export default function App() {
     const total = plans.length;
     const completedCount = plans.filter((p) => p.completed).length;
 
-    // Plans due today
     const todayStr = new Date(now).toISOString().split('T')[0];
     const todayCount = plans.filter((p) => !p.completed && p.date === todayStr).length;
 
@@ -186,7 +246,6 @@ export default function App() {
   const displayedPlans = useMemo(() => {
     let result = [...plans];
 
-    // 1. Tab Filter
     if (activeFilter === 'upcoming') {
       result = result.filter(
         (p) => !p.completed && getPlanDateTime(p.date, p.time).getTime() - now >= 0
@@ -199,7 +258,6 @@ export default function App() {
       result = result.filter((p) => p.completed);
     }
 
-    // 2. Search query filter (title or note)
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(
@@ -209,7 +267,6 @@ export default function App() {
       );
     }
 
-    // 3. Sorting
     result.sort((a, b) => {
       const timeA = getPlanDateTime(a.date, a.time).getTime();
       const timeB = getPlanDateTime(b.date, b.time).getTime();
@@ -219,7 +276,6 @@ export default function App() {
       } else if (sortBy === 'title') {
         return a.title.localeCompare(b.title);
       }
-      // default: nearest
       return timeA - timeB;
     });
 
@@ -232,13 +288,11 @@ export default function App() {
     existingId?: string
   ) => {
     if (existingId) {
-      // Update
       setPlans((prev) =>
         prev.map((p) => (p.id === existingId ? { ...p, ...data } : p))
       );
       addToast(t.toasts.updated, 'success');
     } else {
-      // Create new
       const newPlan: Plan = {
         ...data,
         id: `plan-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
@@ -287,7 +341,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#08080a] text-[#fafafa] selection:bg-white selection:text-black">
-      {/* Top Navigation */}
+      {/* Top Navigation with Session Status & Language Switcher */}
       <Navbar
         currentLang={lang}
         onSelectLang={setLang}
@@ -297,9 +351,27 @@ export default function App() {
         }}
         onNavigate={handleNavigate}
         activeSection={activeSection}
+        user={session.user}
+        isGuest={session.isGuest}
+        onOpenAuth={(mode) => setAuthModalMode(mode)}
+        onLogout={handleLogout}
       />
 
+      {/* Main App Content */}
       <main className="flex-1">
+        {/* User Workspace Identification Strip */}
+        <div className="border-b border-white/5 bg-black/40 py-1.5 px-4 sm:px-8 font-mono text-[10px] text-zinc-500 tracking-widest flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+            <span>SESSION: {session.user ? session.user.email : t.auth.guest}</span>
+            <span className="text-zinc-700">//</span>
+            <span>STORAGE: ISOLATED_LOCAL</span>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 text-zinc-600">
+            <span>[DATA ENCRYPTION: ACTIVE]</span>
+          </div>
+        </div>
+
         {/* Futuristic Hero Section */}
         <Hero
           currentLang={lang}
@@ -481,6 +553,18 @@ export default function App() {
 
       {/* Footer */}
       <Footer currentLang={lang} onRestoreDemo={handleRestoreDemo} />
+
+      {/* Auth Modal (Login / Register / Forgot Password) */}
+      {authModalMode && (
+        <AuthPage
+          currentLang={lang}
+          onSelectLang={setLang}
+          initialMode={authModalMode}
+          onAuthSuccess={handleAuthSuccess}
+          onClose={() => setAuthModalMode(null)}
+          isModal={true}
+        />
+      )}
 
       {/* Add / Edit Modal */}
       <PlanModal

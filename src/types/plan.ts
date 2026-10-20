@@ -6,6 +6,21 @@ export type FilterType = 'all' | 'upcoming' | 'overdue' | 'completed';
 
 export type SortType = 'nearest' | 'furthest' | 'title';
 
+export type AppView = 'app' | 'login' | 'register' | 'forgot_password';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
+  createdAt: number;
+}
+
+export interface AuthSession {
+  user: User | null;
+  isGuest: boolean;
+}
+
 export interface Plan {
   id: string;
   title: string;

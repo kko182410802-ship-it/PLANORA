@@ -114,6 +114,49 @@ export interface Translations {
     builtFor: string;
     allRightsReserved: string;
   };
+  auth: {
+    signIn: string;
+    signUp: string;
+    forgotPassword: string;
+    resetPassword: string;
+    signOut: string;
+    account: string;
+    guest: string;
+    continueAsGuest: string;
+    loginTitle: string;
+    loginSubtitle: string;
+    registerTitle: string;
+    registerSubtitle: string;
+    forgotTitle: string;
+    forgotSubtitle: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    passwordLabel: string;
+    passwordPlaceholder: string;
+    confirmPasswordLabel: string;
+    newPasswordLabel: string;
+    loginBtn: string;
+    registerBtn: string;
+    resetBtn: string;
+    backToLogin: string;
+    alreadyHaveAccount: string;
+    dontHaveAccount: string;
+    demoCredentialsHint: string;
+    loginSuccess: string;
+    logoutSuccess: string;
+    registerSuccess: string;
+    resetSuccess: string;
+    errNameRequired: string;
+    errEmailInvalid: string;
+    errPasswordShort: string;
+    errPasswordMismatch: string;
+    errInvalidCredentials: string;
+    errUserExists: string;
+    errUserNotFound: string;
+    isolatedNotice: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -250,6 +293,49 @@ export const translations: Record<Language, Translations> = {
       builtFor: 'Помогает успевать вовремя и беречь нервы',
       allRightsReserved: 'Все данные сохраняются локально в твоём браузере.',
     },
+    auth: {
+      signIn: 'Войти',
+      signUp: 'Регистрация',
+      forgotPassword: 'Забыли пароль?',
+      resetPassword: 'Сбросить пароль',
+      signOut: 'Выйти',
+      account: 'Профиль',
+      guest: 'Гость',
+      continueAsGuest: 'Продолжить как гость →',
+      loginTitle: 'Вход в систему',
+      loginSubtitle: 'Войдите в аккаунт, чтобы получить доступ к своим изолированным планам.',
+      registerTitle: 'Регистрация',
+      registerSubtitle: 'Создайте персональный аккаунт для надежного хранения задач.',
+      forgotTitle: 'Сброс пароля',
+      forgotSubtitle: 'Укажите зарегистрированный email и задайте новый пароль.',
+      nameLabel: 'Имя или псевдоним',
+      namePlaceholder: 'Алексей',
+      emailLabel: 'Email',
+      emailPlaceholder: 'student@planreminder.io',
+      passwordLabel: 'Пароль',
+      passwordPlaceholder: '••••••••',
+      confirmPasswordLabel: 'Подтверждение пароля',
+      newPasswordLabel: 'Новый пароль',
+      loginBtn: 'Войти в аккаунт',
+      registerBtn: 'Зарегистрироваться',
+      resetBtn: 'Сохранить новый пароль',
+      backToLogin: '← Вернуться ко входу',
+      alreadyHaveAccount: 'Уже есть аккаунт? Войти',
+      dontHaveAccount: 'Нет аккаунта? Зарегистрироваться',
+      demoCredentialsHint: 'Тестовый аккаунт: student@planreminder.io / password123',
+      loginSuccess: 'Авторизация успешна. Добро пожаловать!',
+      logoutSuccess: 'Вы вышли из системы.',
+      registerSuccess: 'Аккаунт успешно создан! Добро пожаловать.',
+      resetSuccess: 'Пароль успешно обновлен. Теперь вы можете войти.',
+      errNameRequired: 'Пожалуйста, введите имя',
+      errEmailInvalid: 'Введите корректный email (с @)',
+      errPasswordShort: 'Пароль должен содержать не менее 6 символов',
+      errPasswordMismatch: 'Введённые пароли не совпадают',
+      errInvalidCredentials: 'Неверный email или пароль',
+      errUserExists: 'Пользователь с таким email уже существует',
+      errUserNotFound: 'Пользователь с таким email не найден',
+      isolatedNotice: 'Все данные каждого пользователя изолированы в личном хранилище.',
+    },
   },
 
   en: {
@@ -373,6 +459,49 @@ export const translations: Record<Language, Translations> = {
       builtFor: 'Stay ahead of deadlines with peace of mind',
       allRightsReserved: 'All data is stored locally in your browser.',
     },
+    auth: {
+      signIn: 'Sign In',
+      signUp: 'Sign Up',
+      forgotPassword: 'Forgot password?',
+      resetPassword: 'Reset Password',
+      signOut: 'Sign Out',
+      account: 'Account',
+      guest: 'Guest',
+      continueAsGuest: 'Continue as guest →',
+      loginTitle: 'Sign In to Account',
+      loginSubtitle: 'Authenticate to access your isolated plans and task timelines.',
+      registerTitle: 'Create Account',
+      registerSubtitle: 'Set up an isolated profile for keeping all assignments organized.',
+      forgotTitle: 'Reset Password',
+      forgotSubtitle: 'Enter your registered email and choose a new password.',
+      nameLabel: 'Full Name or Alias',
+      namePlaceholder: 'Alex Mercer',
+      emailLabel: 'Email',
+      emailPlaceholder: 'student@planreminder.io',
+      passwordLabel: 'Password',
+      passwordPlaceholder: '••••••••',
+      confirmPasswordLabel: 'Confirm Password',
+      newPasswordLabel: 'New Password',
+      loginBtn: 'Sign In',
+      registerBtn: 'Create Account',
+      resetBtn: 'Update Password',
+      backToLogin: '← Back to Sign In',
+      alreadyHaveAccount: 'Already have an account? Sign In',
+      dontHaveAccount: 'No account? Create one now',
+      demoCredentialsHint: 'Demo credentials: student@planreminder.io / password123',
+      loginSuccess: 'Authentication successful. Welcome back!',
+      logoutSuccess: 'Signed out successfully.',
+      registerSuccess: 'Account created successfully! Welcome.',
+      resetSuccess: 'Password updated successfully. Please sign in.',
+      errNameRequired: 'Please enter your name',
+      errEmailInvalid: 'Please enter a valid email address (with @)',
+      errPasswordShort: 'Password must be at least 6 characters',
+      errPasswordMismatch: 'Passwords do not match',
+      errInvalidCredentials: 'Invalid email or password',
+      errUserExists: 'A user with this email already exists',
+      errUserNotFound: 'No user found with this email address',
+      isolatedNotice: 'User data is strictly isolated within your browser storage.',
+    },
   },
 
   ko: {
@@ -495,6 +624,49 @@ export const translations: Record<Language, Translations> = {
       restoreDemo: '예시 데이터 복원',
       builtFor: '마감 기한을 놓치지 않도록 도와줍니다',
       allRightsReserved: '모든 데이터는 브라우저 로컬 저장소에 안전하게 보관됩니다.',
+    },
+    auth: {
+      signIn: '로그인',
+      signUp: '회원가입',
+      forgotPassword: '비밀번호를 잊으셨나요?',
+      resetPassword: '비밀번호 재설정',
+      signOut: '로그아웃',
+      account: '계정',
+      guest: '게스트',
+      continueAsGuest: '게스트로 계속하기 →',
+      loginTitle: '계정 로그인',
+      loginSubtitle: '격리된 일정과 과제 타임라인에 안전하게 접근하세요.',
+      registerTitle: '새 계정 생성',
+      registerSubtitle: '과제를 체계적으로 관리할 수 있는 독립된 프로필을 생성합니다.',
+      forgotTitle: '비밀번호 재설정',
+      forgotSubtitle: '가입된 이메일을 입력하고 새 비밀번호를 설정하세요.',
+      nameLabel: '이름 또는 닉네임',
+      namePlaceholder: '홍길동',
+      emailLabel: '이메일',
+      emailPlaceholder: 'student@planreminder.io',
+      passwordLabel: '비밀번호',
+      passwordPlaceholder: '••••••••',
+      confirmPasswordLabel: '비밀번호 확인',
+      newPasswordLabel: '새 비밀번호',
+      loginBtn: '로그인하기',
+      registerBtn: '가입 완료',
+      resetBtn: '비밀번호 변경',
+      backToLogin: '← 로그인으로 돌아가기',
+      alreadyHaveAccount: '이미 계정이 있으신가요? 로그인',
+      dontHaveAccount: '계정이 없으신가요? 회원가입',
+      demoCredentialsHint: '체험 계정: student@planreminder.io / password123',
+      loginSuccess: '로그인되었습니다. 환영합니다!',
+      logoutSuccess: '로그아웃되었습니다.',
+      registerSuccess: '계정이 성공적으로 생성되었습니다! 환영합니다.',
+      resetSuccess: '비밀번호가 재설정되었습니다. 다시 로그인해 주세요.',
+      errNameRequired: '이름을 입력해 주세요',
+      errEmailInvalid: '올바른 이메일 형식을 입력해 주세요 ( @ 포함 )',
+      errPasswordShort: '비밀번호는 최소 6자 이상이어야 합니다',
+      errPasswordMismatch: '비밀번호가 일치하지 않습니다',
+      errInvalidCredentials: '이메일 또는 비밀번호가 올바르지 않습니다',
+      errUserExists: '이미 등록된 이메일 주소입니다',
+      errUserNotFound: '해당 이메일의 사용자를 찾을 수 없습니다',
+      isolatedNotice: '사용자별 일정 데이터는 브라우저 저장소 내에서 엄격히 분리 보관됩니다.',
     },
   },
 };

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Plus } from 'lucide-react';
-import { Language } from '../types/plan';
+import { Plus, LogOut, User as UserIcon, LogIn } from 'lucide-react';
+import { Language, User } from '../types/plan';
 import { translations } from '../translations';
 
 interface NavbarProps {
@@ -9,6 +9,10 @@ interface NavbarProps {
   onOpenAddModal: () => void;
   onNavigate: (sectionId: string) => void;
   activeSection: string;
+  user: User | null;
+  isGuest: boolean;
+  onOpenAuth: (mode: 'login' | 'register') => void;
+  onLogout: () => void;
 }
 
 const languages: { code: Language; label: string }[] = [
@@ -23,6 +27,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAddModal,
   onNavigate,
   activeSection,
+  user,
+  isGuest,
+  onOpenAuth,
+  onLogout,
 }) => {
   const t = translations[currentLang];
 
@@ -55,7 +63,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Minimal Navigation Links with thin indicators */}
-        <nav className="hidden md:flex items-center gap-8 font-mono text-xs tracking-[0.2em] uppercase">
+        <nav className="hidden lg:flex items-center gap-8 font-mono text-xs tracking-[0.2em] uppercase">
           <button
             onClick={() => onNavigate('hero')}
             className={`py-1 relative transition-colors ${
@@ -88,8 +96,42 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </nav>
 
-        {/* Right Actions: Minimalist RU / EN / KR switcher & sharp Action Button */}
-        <div className="flex items-center gap-4 sm:gap-6">
+        {/* Right Actions: User Account, Minimalist RU/EN/KR switcher & Add Button */}
+        <div className="flex items-center gap-3 sm:gap-5">
+          {/* User Account / Session Profile Pill */}
+          <div className="flex items-center gap-2 font-mono text-xs">
+            {user && !isGuest ? (
+              <div className="flex items-center gap-2 border border-white/15 px-2.5 py-1 bg-white/5">
+                <UserIcon className="w-3 h-3 text-zinc-400" />
+                <span className="text-zinc-300 uppercase tracking-wider text-[11px] max-w-[110px] sm:max-w-[150px] truncate">
+                  {user.name}
+                </span>
+                <span className="text-zinc-600">|</span>
+                <button
+                  onClick={onLogout}
+                  title={t.auth.signOut}
+                  className="text-zinc-500 hover:text-white transition-colors flex items-center gap-1 uppercase text-[10px] tracking-widest"
+                >
+                  <LogOut className="w-3 h-3" />
+                  <span className="hidden sm:inline">{t.auth.signOut}</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="border border-dashed border-white/20 text-zinc-500 px-2 py-1 uppercase text-[10px] tracking-widest hidden sm:inline-block">
+                  {t.auth.guest}
+                </span>
+                <button
+                  onClick={() => onOpenAuth('login')}
+                  className="flex items-center gap-1.5 border border-white/20 hover:border-white px-2.5 py-1 text-zinc-300 hover:text-white uppercase text-[11px] tracking-wider transition-colors bg-white/5"
+                >
+                  <LogIn className="w-3 h-3" />
+                  <span>{t.auth.signIn}</span>
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Minimal Language Switcher: RU / EN / KR with thin line */}
           <div className="flex items-center font-mono text-xs tracking-wider text-zinc-500 border border-white/10 px-2 py-1 bg-white/5">
             {languages.map((item, idx) => (
@@ -112,10 +154,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Sharp Metallic Action Button */}
           <button
             onClick={onOpenAddModal}
-            className="group flex items-center gap-2 px-4 py-2 bg-white hover:bg-zinc-200 text-black text-xs font-mono uppercase tracking-[0.15em] font-semibold transition-all shadow-[0_0_15px_rgba(255,255,255,0.15)] hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] active:translate-y-px"
+            className="group flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2 bg-white hover:bg-zinc-200 text-black text-xs font-mono uppercase tracking-[0.15em] font-semibold transition-all shadow-[0_0_15px_rgba(255,255,255,0.15)] hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] active:translate-y-px"
           >
             <Plus className="w-3.5 h-3.5 transition-transform group-hover:rotate-90 duration-200" />
-            <span className="whitespace-nowrap">{t.hero.addBtn}</span>
+            <span className="whitespace-nowrap hidden sm:inline">{t.hero.addBtn}</span>
+            <span className="sm:hidden">{t.nav.addPlan}</span>
           </button>
         </div>
       </div>
